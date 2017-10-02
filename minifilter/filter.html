@@ -4,12 +4,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta charset="UTF-8">
 <style>
-  body {font-family: "Gill Sans", sans-serif;}
+  body {
+    font-family: "Gill Sans", sans-serif;
+    background-color: plum;
+  }
   .DropZone {
     width: 10em;
-    height: 6em;
+    height: 5.25em;
     padding-top: 4em;
     background-color: BlanchedAlmond;
+    border-radius: 2em;
+    margin-bottom: 1em;
+    border: 2px solid Orchid;
    }
 </style>
 </head>
@@ -31,7 +37,10 @@
       <option value="hueshift">Hue Shift</option>
       <option value="contrastBoost">Contrast</option>
       <option value="saturationBoost">Saturate</option>
+      <option value="desaturate">Desaturate</option>
       <option value="brightnessBoost">Brighten</option>
+      <option value="blur">Blur</option>
+      <option value="abstractColors">Abstract Colors</option>
     </select>
     <button id="filterbtn">Filter</button>
     <button id="savebtn">Save</button>

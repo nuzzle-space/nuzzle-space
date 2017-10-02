@@ -207,6 +207,66 @@ var saturationBoost = function(){
   ctx.putImageData(imageData, 0, 0);
 }
 
+var desaturate = function(){
+  for (var i = 0; i < data.length; i += 4) {
+    var tmp1 = data[i]
+    var tmp2 = data[i+1]
+    var tmp3 = data[i+2]
+    var avg = (data[i] + data[i+1] + data[i+2]) / 3
+    saturationAmount = .02
+    if (tmp1 < avg){
+      tmp1 *= 1 + saturationAmount
+    } else {
+      tmp1 *= 1 - saturationAmount
+    }
+    if (tmp2 < avg){
+      tmp2 *= 1 + saturationAmount
+    } else {
+      tmp2 *= 1 - saturationAmount
+    }
+    if (tmp3 < avg){
+      tmp3 *= 1 + saturationAmount
+    } else {
+      tmp3 *= 1 - saturationAmount
+    }
+    data[i]     = tmp1; // red
+    data[i + 1] = tmp2; // green
+    data[i + 2] = tmp3; // blue
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+var blur = function(){
+  var iter = 1
+  for (var x = 0; x < iter; x += 4){
+    var tmpdata = []
+    for (var i = 0; i < data.length; i += 4){
+      tmpdata[i] = (data[(i-4) % data.length] + data[(i+4) % data.length] + data[(i - (img.width * 4)) % data.length] + data[(i + (img.width * 4)) % data.length]) / 4
+      tmpdata[i+1] = ( data[(i-3) % data.length] + data[(i+5) % data.length] + data[(i - (img.width * 4) + 1) % data.length] + data[(i + (img.width * 4) + 1) % data.length]) / 4
+      tmpdata[i+2] = (data[(i-2) % data.length] + data[(i+6) % data.length] + data[(i - (img.width * 4) + 2) % data.length] + data[(i + (img.width * 4) + 2) % data.length]) / 4
+    }
+    for (var i = 0; i < data.length; i+=4){
+      data[i] = tmpdata[i]
+      data[i+1] = tmpdata[i+1]
+      data[i+2] = tmpdata[i+2]
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+var abstractColors = function(){
+  for (var x = 0; x < 8; x += 1){
+    saturationBoost()
+  }
+  colorSplit()
+  for (var x = 0; x < 20; x += 1){
+    scatter()
+  }
+  for (var x = 0; x < 5; x += 1){
+    desaturate()
+  }
+}
+
 var load = function(){
   img.crossOrigin = "anonymous"
   img.src = document.getElementById("imgURL").value
@@ -271,8 +331,17 @@ var filter = function(){
     case "saturationBoost":
       saturationBoost()
       break
+    case "desaturate":
+      desaturate()
+      break
     case "brightnessBoost":
       brightnessBoost()
+      break
+    case "blur":
+      blur()
+      break
+    case "abstractColors":
+      abstractColors()
       break
   }
 }
