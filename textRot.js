@@ -7,21 +7,13 @@ var active = false
 function draw(text) {
   var img = canvas
   var pixels = canvas.width * canvas.height
-  ctx.fillStyle="white"
+  ctx.fillStyle="plum"
   ctx.fillRect(0,0,canvas.width, canvas.height)
   ctx.fillStyle="black"
   ctx.font="64px Georgia"
   ctx.fillText(text, 50, 50);
   var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   var data = imageData.data;
-
-  shadowCtx.fillStyle="white"
-  shadowCtx.fillRect(0,0,canvas.width, canvas.height)
-  shadowCtx.fillStyle="black"
-  shadowCtx.font="64px Georgia"
-  shadowCtx.fillText(text, 50, 50);
-  var shadowImageData = shadowCtx.getImageData(0, 0, canvas.width, canvas.height);
-  var shadowData = shadowImageData.data;
 
   var ultraFilter = function(){
       for (var i = 0; i < data.length; i += 4){
@@ -38,6 +30,34 @@ function draw(text) {
             data[i] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
             data[i+1] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
             data[i+2] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+          }
+        }
+        if (!Math.floor(Math.random() * 50)){ // bright-b-gone
+          var diffThreshold = 128
+          if ((Math.abs(data[i] - data[i+1]) > diffThreshold || Math.abs(data[i] - data[i+2]) > diffThreshold) && data[i] != 255 && data[i] != 0){
+            [index1, index2, index3] = randDirs(i)
+            var shift = 5
+            if (data[i] > 192){
+              data[i] -= shift
+            } else if (data[i] < 64){
+              data[i] += shift
+            } else {
+              data[i] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+            }
+            if (data[i + 1] > 192){
+              data[i + 1] -= shift
+            } else if (data[i + 1] < 64){
+              data[i + 1] += shift
+            } else {
+              data[i + 1] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+            }
+            if (data[i + 2] > 192){
+              data[i + 2] -= shift
+            } else if (data[i + 2] < 64){
+              data[i + 2] += shift
+            } else {
+              data[i + 2] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+            }
           }
         }
         if (!Math.floor(Math.random() * 10000) && data[i] < 192 && data[i] >= 64){ // horizontal bleed
