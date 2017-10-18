@@ -3,28 +3,36 @@ var shadowCanvas = document.getElementById("shadowCanvas")
 var ctx = canvas.getContext('2d')
 var shadowCtx = shadowCanvas.getContext('2d')
 var active = false
+var length, width, height, data, i
 
 function draw(text) {
   var img = canvas
+  width = canvas.width
+  height = canvas.height
   var pixels = canvas.width * canvas.height
-  ctx.fillStyle="plum"
+  ctx.fillStyle="white"
   ctx.fillRect(0,0,canvas.width, canvas.height)
   ctx.fillStyle="black"
   ctx.font="64px Georgia"
   ctx.fillText(text, 50, 50);
   var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  var data = imageData.data;
-
+  data = imageData.data;
+  length = data.length
+  var fps = 20;
+  var interval = 1000 / fps
+  var once = true
   var ultraFilter = function(){
-      for (var i = 0; i < data.length; i += 4){
-      if (!Math.floor(Math.random() * (12)) && Math.floor(Math.random() * (data.length)) < i + (canvas.width * 100)){ // slide down
-          data[(i + (canvas.width * 4)) % data.length] = data[i]
-          data[((i + (canvas.width * 4)) + 1) % data.length] = data[i + 1]
-          data[((i + (canvas.width * 4)) + 2) % data.length] = data[i + 2]
+    var scale = 1
+      for (i = 0; i < data.length; i += 4){
+        if (chance(24)){
+          slideDown()
         }
-        if (!Math.floor(Math.random() * (50))){ // gray-b-gone
-          var grayThreshold = 3
-          if ((Math.abs(data[i] - data[i+1]) < grayThreshold || Math.abs(data[i] - data[i+2]) < grayThreshold) && data[i] != 255 && data[i] != 0){
+        if (
+          false
+          && !Math.floor(Math.random() * (1000 * scale))
+        ){ // gray-b-gone
+          var grayThreshold = 10
+          while ((Math.abs(data[i] - data[i+1]) < grayThreshold || Math.abs(data[i] - data[i+2]) < grayThreshold) && data[i] < 250 && data[i] > 5){
             [index1, index2, index3] = randDirs(i)
             var shift = 5
             data[i] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
@@ -32,9 +40,12 @@ function draw(text) {
             data[i+2] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
           }
         }
-        if (!Math.floor(Math.random() * 50)){ // bright-b-gone
-          var diffThreshold = 128
-          if ((Math.abs(data[i] - data[i+1]) > diffThreshold || Math.abs(data[i] - data[i+2]) > diffThreshold) && data[i] != 255 && data[i] != 0){
+        if (
+          false
+          && !Math.floor(Math.random() * (500 * scale))
+        ){ // bright-b-gone
+          var diffThreshold = 230
+          while (diffThreshold(data[i], data[i + 1], diffThreshold) || diffThreshold(data[i], data[i + 2], diffThreshold) && data[i] < 250 && data[i] > 5){
             [index1, index2, index3] = randDirs(i)
             var shift = 5
             if (data[i] > 192){
@@ -42,62 +53,167 @@ function draw(text) {
             } else if (data[i] < 64){
               data[i] += shift
             } else {
-              data[i] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+              data[i] += randSignFlip(shift)
             }
             if (data[i + 1] > 192){
               data[i + 1] -= shift
             } else if (data[i + 1] < 64){
               data[i + 1] += shift
             } else {
-              data[i + 1] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+              data[i + 1] += randSignFlip(shift)
             }
             if (data[i + 2] > 192){
               data[i + 2] -= shift
             } else if (data[i + 2] < 64){
               data[i + 2] += shift
             } else {
-              data[i + 2] += shift * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+              data[i + 2] += randSignFlip(shift)
             }
           }
         }
-        if (!Math.floor(Math.random() * 10000) && data[i] < 192 && data[i] >= 64){ // horizontal bleed
+        if (
+          true
+          && !Math.floor(Math.random() * (10000 * scale))
+          && data[i] < 192 && data[i] >= 64
+        ){ // horizontal bleed
           var resonance = 1.01
           if (data[i] > data[i+1] && data[i] > data[i+2]){
-            data[i-4 % data.length] *= resonance * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
-            data[i+4 % data.length] *= resonance * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+            data[i] /= randSignFlip(resonance)
+            data[i-4 % data.length] *= randSignFlip(resonance)
+            data[i+4 % data.length] *= randSignFlip(resonance)
           } else if (data[i+1] > data[i+2]){
-            data[i-3 % data.length] *= resonance * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
-            data[i+5 % data.length] *= resonance * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+            data[i + 1] /= randSignFlip(resonance)
+            data[i-3 % data.length] *= randSignFlip(resonance)
+            data[i+5 % data.length] *= randSignFlip(resonance)
           } else {
-            data[i-2 % data.length] *= resonance * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
-            data[i+6 % data.length] *= resonance * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+            data[i + 2] /= randSignFlip(resonance)
+            data[i-2 % data.length] *= randSignFlip(resonance)
+            data[i+6 % data.length] *= randSignFlip(resonance)
           }
         }
-        if (!Math.floor(Math.random() * 1000) && i > canvas.width * 4){ // minor blur
-          data[i] = (data[(i-4) % data.length] + data[(i+4) % data.length] + data[(i - (img.width * 4)) % data.length] + data[(i + (img.width * 4)) % data.length]) / 4
-          data[i+1] = ( data[(i-3) % data.length] + data[(i+5) % data.length] + data[(i - (img.width * 4) + 1) % data.length] + data[(i + (img.width * 4) + 1) % data.length]) / 4
-          data[i+2] = (data[(i-2) % data.length] + data[(i+6) % data.length] + data[(i - (img.width * 4) + 2) % data.length] + data[(i + (img.width * 4) + 2) % data.length]) / 4
+        if (
+          true
+          //&& !Math.floor(Math.random() * (10000 * scale))
+          && i > canvas.width * 4
+        ){ // minor blur
+          setColor("s", "r", avgColor("r"))
+          setColor("s", "g", avgColor("g"))
+          setColor("s", "b", avgColor("b"))
         }
-        if (!Math.floor(Math.random() * (500))){ // scatter
+        if (
+          false
+          && !Math.floor(Math.random() * (1000 * scale))
+        ){ // scatter
           var index1, index2, index3
           [index1, index2, index3] = randDir(i)
           data[index1 % data.length] = data[i]
           data[index2 % data.length] = data[i + 1]
           data[index3 % data.length] = data[i + 2]
         }
-        if (!Math.floor(Math.random() * 20000)){
+        if (
+          false
+          && !Math.floor(Math.random() * (20000 * scale))
+        ){
           data[i] += 1
           data[i + 1] += 1
-          data[i + 1] += 1
+          data[i + 2] += 1
           data[i] %= 256
           data[i + 1] %= 256
+          data[i + 2] %= 256
+        }
+        if (
+          false
+          && !Math.floor(Math.random() * (5000 * scale))
+          && (data[i] + data[i+1] + data[i+2]) / 3 < 64
+        ){
+          data[i] += 2
+          data[i + 1] += 2
+          data[i + 2] += 2
+          data[i] %= 256
           data[i + 1] %= 256
+          data[i + 2] %= 256
         }
       }
     ctx.putImageData(imageData, 0, 0);
   }
 
-  var randDirs = function(i){
+  var slideDown = function(){
+    setPixel("d", "s")
+  }
+
+  var chance = function(num){
+    return !Math.floor(Math.random() * (num))
+  }
+
+var avgColor = function(color){
+  return avg([getColor("s", color),getColor("u", color), getColor("d", color), getColor("l", color), getColor("r", color)])
+}
+
+var diffThreshold = function(a, b, threshold){
+    return Math.abs(a - b) > threshold
+  }
+
+var setPixel = function(dest, source){
+    setColor(dest, "r", getColor("s", "r"))
+    setColor(dest, "g", getColor("s", "g"))
+    setColor(dest, "b", getColor("s", "b"))
+  }
+
+var setColor = function(neighbor, color, value){
+    data[get(neighbor, color)] = value
+  }
+
+var getColor = function(neighbor, color){
+    return data[get(neighbor, color)]
+  }
+
+var randSignFlip = function(num){
+    return num * (Math.floor((Math.floor(Math.random() * 2)) * 1.5)) - 2
+  }
+
+var get = function(neighbor, color){
+    var val = i
+    switch (neighbor){
+      case "r":
+        val += 4
+        break
+      case "l":
+        val -= 4
+        break
+      case "u":
+        val -= width * 4
+        break
+      case "d":
+        val += width * 4
+        break
+      case "s":
+        val += 0
+    }
+    switch (color){
+      case "r":
+        val += 0
+        break
+      case "g":
+        val += 1
+        break
+      case "b":
+        val += 2
+        break
+    }
+    val %= length
+    return val
+  }
+
+var avg = function(list){
+    var sum = 0
+    for (var x = 0; x < list.length; x++){
+      sum += list[x]
+    }
+    sum /= list.length
+    return sum
+  }
+
+var randDirs = function(i){
     var dirs = [
       (i - 4), // left
       (i + 4), // right
@@ -116,7 +232,7 @@ function draw(text) {
     return [index1, index2, index3]
   }
 
-  var randDir = function(i){
+var randDir = function(i){
     var dirs = [
       (i - 4), // left
       (i + 4), // right
@@ -129,7 +245,7 @@ function draw(text) {
     var index3 = (dirs[tmp] + 2)
     return [index1, index2, index3]
   }
-  setInterval(ultraFilter, 12)
+  setInterval(ultraFilter, interval)
 }
 
 var apply = function(){
@@ -142,4 +258,4 @@ var apply = function(){
   }
 }
 
-  document.getElementById('apply').addEventListener('click', apply)
+document.getElementById('apply').addEventListener('click', apply)
